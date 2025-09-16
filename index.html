@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronômetro e Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 768px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .card {
+            background-color: #2d3748;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .display {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            color: #4fd1c5;
+        }
+        .time-input {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .btn-green {
+            background-color: #48bb78;
+            color: white;
+        }
+        .btn-green:hover {
+            background-color: #38a169;
+        }
+        .btn-yellow {
+            background-color: #ecc94b;
+            color: #1a202c;
+        }
+        .btn-yellow:hover {
+            background-color: #d69e2e;
+        }
+        .btn-red {
+            background-color: #f56565;
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #e53e3e;
+        }
+        .alert {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex justify-center items-center min-h-screen">
+    <div class="container bg-gray-800 p-8 rounded-2xl shadow-lg">
+        
+        <!-- Cronômetro -->
+        <div class="card bg-gray-700">
+            <h2 class="section-title text-center text-teal-400">Cronômetro</h2>
+            <div id="stopwatch-display" class="display mb-4 text-teal-400">00:00:00</div>
+            <div class="flex justify-center space-x-4">
+                <button id="stopwatch-start" class="btn btn-green">Iniciar</button>
+                <button id="stopwatch-stop" class="btn btn-yellow" disabled>Parar</button>
+                <button id="stopwatch-reset" class="btn btn-red">Reiniciar</button>
+            </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="card bg-gray-700">
+            <h2 class="section-title text-center text-purple-400">Timer</h2>
+            <div class="flex justify-center space-x-2 mb-4">
+                <input type="number" id="timer-minutes" class="time-input w-20" placeholder="Min" value="0" min="0">
+                <input type="number" id="timer-seconds" class="time-input w-20" placeholder="Seg" value="0" min="0" max="59">
+            </div>
+            <div id="timer-display" class="display mb-4 text-purple-400">00:00</div>
+            <div class="flex justify-center space-x-4">
+                <button id="timer-start" class="btn btn-green">Iniciar</button>
+                <button id="timer-stop" class="btn btn-yellow" disabled>Parar</button>
+                <button id="timer-reset" class="btn btn-red">Reiniciar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Lógica do Cronômetro
+        let stopwatchInterval;
+        let stopwatchTime = 0;
+        const stopwatchDisplay = document.getElementById('stopwatch-display');
+        const stopwatchStartBtn = document.getElementById('stopwatch-start');
+        const stopwatchStopBtn = document.getElementById('stopwatch-stop');
+        const stopwatchResetBtn = document.getElementById('stopwatch-reset');
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const format = (num) => num.toString().padStart(2, '0');
+
+            return `${format(hours)}:${format(minutes)}:${format(seconds)}`;
+        }
+
+        stopwatchStartBtn.addEventListener('click', () => {
+            if (!stopwatchInterval) {
+                const startTime = Date.now() - stopwatchTime;
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime = Date.now() - startTime;
+                    stopwatchDisplay.textContent = formatTime(stopwatchTime);
+                }, 1000);
+                stopwatchStartBtn.disabled = true;
+                stopwatchStopBtn.disabled = false;
+            }
+        });
+
+        stopwatchStopBtn.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            stopwatchStartBtn.disabled = false;
+            stopwatchStopBtn.disabled = true;
+        });
+
+        stopwatchResetBtn.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            stopwatchTime = 0;
+            stopwatchDisplay.textContent = '00:00:00';
+            stopwatchStartBtn.disabled = false;
+            stopwatchStopBtn.disabled = true;
+        });
+
+        // Lógica do Timer
+        let timerInterval;
+        const timerDisplay = document.getElementById('timer-display');
+        const timerMinutesInput = document.getElementById('timer-minutes');
+        const timerSecondsInput = document.getElementById('timer-seconds');
+        const timerStartBtn = document.getElementById('timer-start');
+        const timerStopBtn = document.getElementById('timer-stop');
+        const timerResetBtn = document.getElementById('timer-reset');
+        
+        function updateTimerDisplay(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            const format = (num) => num.toString().padStart(2, '0');
+            timerDisplay.textContent = `${format(minutes)}:${format(seconds)}`;
+        }
+
+        timerStartBtn.addEventListener('click', () => {
+            if (!timerInterval) {
+                let minutes = parseInt(timerMinutesInput.value, 10) || 0;
+                let seconds = parseInt(timerSecondsInput.value, 10) || 0;
+                let totalSeconds = minutes * 60 + seconds;
+
+                if (totalSeconds <= 0) {
+                    alert('Por favor, insira um tempo válido para o timer.');
+                    return;
+                }
+
+                timerMinutesInput.disabled = true;
+                timerSecondsInput.disabled = true;
+                timerStartBtn.disabled = true;
+                timerStopBtn.disabled = false;
+
+                timerInterval = setInterval(() => {
+                    if (totalSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        timerDisplay.classList.add('alert');
+                        alert('Tempo esgotado!'); // Alerta visual
+                        timerStopBtn.disabled = true;
+                        timerStartBtn.disabled = false;
+                        timerMinutesInput.disabled = false;
+                        timerSecondsInput.disabled = false;
+                        return;
+                    }
+                    totalSeconds--;
+                    updateTimerDisplay(totalSeconds);
+                }, 1000);
+            }
+        });
+
+        timerStopBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerStartBtn.disabled = false;
+            timerStopBtn.disabled = true;
+            timerMinutesInput.disabled = false;
+            timerSecondsInput.disabled = false;
+        });
+
+        timerResetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerMinutesInput.value = '0';
+            timerSecondsInput.value = '0';
+            updateTimerDisplay(0);
+            timerStartBtn.disabled = false;
+            timerStopBtn.disabled = true;
+            timerMinutesInput.disabled = false;
+            timerSecondsInput.disabled = false;
+            timerDisplay.classList.remove('alert');
+        });
+
+        // Atualiza o display inicial do timer com base nos inputs
+        updateTimerDisplay(0);
+    </script>
+</body>
+</html>
